@@ -14,8 +14,8 @@ import java.util.*;
 public class FindDiffience {
 
     public static void main(String[] args) throws IOException {
-        String inorder = new String("/Users/zhangyue/IdeaProjects/juc/src/main/resources/test/inorder.txt");
-        String seq = new String("/Users/zhangyue/IdeaProjects/juc/src/main/resources/test/seq.txt");
+        String inorder = new String("src/main/resources/test/inorder.txt");
+        String seq = new String("src/main/resources/test/seq.txt");
         List<String> list1 = FileUtils.readToFile(inorder);
         List<String> list2 = FileUtils.readToFile(seq);
         System.out.println(list1.size());

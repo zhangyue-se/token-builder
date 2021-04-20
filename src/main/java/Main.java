@@ -65,7 +65,7 @@ public class Main {
         //生成训练所需要的数据格式
         System.out.println(methodDeclarationList.size());
         for (MethodDeclaration method:methodDeclarationList){
-//            System.out.println(method.toString());
+            System.out.println(method.toString());
             String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
             String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
             handleToken(inorder, seqOrder);
@@ -126,7 +126,8 @@ public class Main {
                     BufferedWriter writer2 = Files.newBufferedWriter(path2, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
                     BufferedWriter writer3 = Files.newBufferedWriter(path3, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
 
-                    if (stringBuilder2.toString().contains("null")){
+                    if (stringBuilder2.toString().contains("null")||vocabularyOfToken.get(tokenListOfSeqOrder.get(i+1).getToken())==null||
+                            vocabularyOfType.get(tokenListOfSeqOrder.get(i+1).getType())==null){
                         continue;
                     }
                     writer1.write(stringBuilder1.toString() + "\n");
@@ -140,7 +141,7 @@ public class Main {
 
             }
         }else {
-            System.out.println("该方法token个数不一致！！,目前一共有" + count1 + "个方法有问题");
+            System.out.println("该方法token个数不一致！！,目前一共有" + (++count1) + "个方法有问题");
         }
     }
 

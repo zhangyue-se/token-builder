@@ -523,13 +523,23 @@ public class PrettyPrintVisitor implements VoidVisitor<Void> {
         }
     }
 
+    // TODO: 2021/4/20 问题：int a,b; 这种情况这里会处理一个PrimitiveType int，但是中序遍历会两次
     @Override
     public void visit(final PrimitiveType n, final Void arg) {
         printOrphanCommentsBeforeThisChildNode(n);
         printComment(n.getComment(), arg);
-//        printer.tokenWithType("PrimitiveType", "null");
-//        printer.tokenWithType("Type", n.getType().asString());
-        printer.tokenWithType("PrimitiveType", n.getType().asString(),n.getBegin().get().line,n.getBegin().get().column);
+        Node node = n.getParentNode().get().getParentNode().get();
+//        System.out.println(node.getClass().getName());
+        if(node instanceof VariableDeclarationExpr){
+            for (int i = 0;i<node.getChildNodes().size();i++){
+                if (node.getChildNodes().get(i) instanceof VariableDeclarator){
+                    printer.tokenWithType("PrimitiveType", n.getType().asString(),n.getBegin().get().line,n.getBegin().get().column);
+                }
+            }
+        }else {
+            printer.tokenWithType("PrimitiveType", n.getType().asString(),n.getBegin().get().line,n.getBegin().get().column);
+        }
+
         printAnnotations(n.getAnnotations(), true, arg);
         printer.print(n.getType().asString());
     }

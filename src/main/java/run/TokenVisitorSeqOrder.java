@@ -66,13 +66,13 @@ public class TokenVisitorSeqOrder {
             public void visit(MethodDeclaration n, Void arg) {
 
                 DotPrinter dotPrinter = new DotPrinter(true);
-                String filePath = "/Users/zhangyue/IdeaProjects/juc/src/main/resources/test.dot";
+                String filePath = "/Users/zhangyue/IdeaProjects/code-completion/src/main/resources/test.dot";
                 BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
                 bw.flush();
                 bw.write(dotPrinter.output(n));
                 bw.close();
                 Runtime rt = Runtime.getRuntime();
-                rt.exec("dot -Tpng " + filePath + " -o " + "/Users/zhangyue/IdeaProjects/juc/src/main/resources/test" + ".png");
+                rt.exec("dot -Tpng " + filePath + " -o " + "/Users/zhangyue/IdeaProjects/code-completion/src/main/resources/test.png");
                 super.visit(n, arg);
             }
         }.visit(StaticJavaParser.parse(new File(codePath)),null);
