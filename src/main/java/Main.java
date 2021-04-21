@@ -112,7 +112,6 @@ public class Main {
                     if(tokenId == null){
                         continue;
                     }
-
                     stringBuilder1.append(vocabularyOfType.get(tokenListOfSeqOrder.get(j).getType()) + "," + vocabularyOfToken.get(tokenListOfSeqOrder.get(j).getToken()) + " ");
                 }
                 //获取当前顺序序列token对应的中序序列
@@ -138,7 +137,6 @@ public class Main {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
         }else {
             System.out.println("该方法token个数不一致！！,目前一共有" + (++count1) + "个方法有问题");

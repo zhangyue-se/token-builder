@@ -524,6 +524,7 @@ public class PrettyPrintVisitor implements VoidVisitor<Void> {
     }
 
     // TODO: 2021/4/20 问题：int a,b; 这种情况这里会处理一个PrimitiveType int，但是中序遍历会两次
+    // 初步解决，验证是否存在问题
     @Override
     public void visit(final PrimitiveType n, final Void arg) {
         printOrphanCommentsBeforeThisChildNode(n);
