@@ -20,7 +20,6 @@ public class FindDiffience {
         List<String> list2 = FileUtils.readToFile(seq);
         System.out.println(list1.size());
         System.out.println(list2.size());
-        int count = 0;
         if (list1.size()> list2.size()){
             for (String s:list1){
                 if (!list2.contains(s)){

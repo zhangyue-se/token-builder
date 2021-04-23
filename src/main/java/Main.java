@@ -30,7 +30,6 @@ public class Main {
     static Map<String, Integer> vocabularyOfToken = new HashMap<>();
     static int count1 = 0;
     public static void main(String[] args) throws IOException {
-
         System.out.println("开始获取所有java文件路径.......");
         FileUtils.getJavaPaths(PathConfig.rootPath);
         List<String> javaPathList = FileUtils.javaPathList;
