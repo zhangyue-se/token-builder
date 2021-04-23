@@ -26,15 +26,17 @@ import java.util.*;
  */
 public class Main {
 
-    static Map<String, Integer> vocabularyOfType = new HashMap<>();
-    static Map<String, Integer> vocabularyOfToken = new HashMap<>();
-    static int count1 = 0;
+    static Map<String, Integer> vocabularyOfType = new HashMap<>();     //存放type词表
+    static Map<String, Integer> vocabularyOfToken = new HashMap<>();    //存放token词表
+    static int count1 = 0;//用来计数出问题的方法
+
     public static void main(String[] args) throws IOException {
         System.out.println("开始获取所有java文件路径.......");
         FileUtils.getJavaPaths(PathConfig.rootPath);
         List<String> javaPathList = FileUtils.javaPathList;
         System.out.println("获取所有java文件路径完成，一共获取了" + javaPathList.size() + "个java文件...");
         System.out.println();
+
         System.out.println("开始获取所有的MethodDeclaration.......");
         List<MethodDeclaration> methodDeclarationList = new ArrayList<>();
         int count = 0;
@@ -62,10 +64,10 @@ public class Main {
 
         System.out.println("开始生成训练数据.......");
         //生成训练所需要的数据格式
-        System.out.println(methodDeclarationList.size());
         int count2 = 0;
+        int all = methodDeclarationList.size();
         for (MethodDeclaration method:methodDeclarationList){
-            System.out.println("正在处理第" + (++count2) + "个方法体");
+            System.out.println("正在处理第" + (++count2) + "个方法体，已完成：" + count2 + "/" + all);
             String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
             String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
             handleToken(inorder, seqOrder, method);
