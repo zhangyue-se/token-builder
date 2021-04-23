@@ -39,7 +39,7 @@ public class Main {
         List<MethodDeclaration> methodDeclarationList = new ArrayList<>();
         int count = 0;
         for (String path:javaPathList){
-            System.out.println("正在处理：" + (++count));
+            System.out.println("已经处理：" + (++count) + "个java文件");
             new VoidVisitorAdapter<Void>(){
                 @Override
                 public void visit(MethodDeclaration n, Void arg) {
@@ -63,11 +63,12 @@ public class Main {
         System.out.println("开始生成训练数据.......");
         //生成训练所需要的数据格式
         System.out.println(methodDeclarationList.size());
+        int count2 = 0;
         for (MethodDeclaration method:methodDeclarationList){
-            System.out.println(method.toString());
+            System.out.println("正在处理第" + (++count2) + "个方法体");
             String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
             String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
-            handleToken(inorder, seqOrder);
+            handleToken(inorder, seqOrder, method);
         }
         System.out.println("生成训练数据结束.......");
     }
@@ -78,7 +79,7 @@ public class Main {
      * @param seqOrder
      * @throws IOException
      */
-    public static void handleToken(String inorder, String seqOrder) throws IOException {
+    public static void handleToken(String inorder, String seqOrder, MethodDeclaration method) throws IOException {
         //将中序序列处理为TokenInfo类型的list
         List<TokenInfo> tokenListOfInorder = new ArrayList<>();
         String[] inorderByLine = inorder.split("\n");
@@ -139,6 +140,11 @@ public class Main {
             }
         }else {
             System.out.println("该方法token个数不一致！！,目前一共有" + (++count1) + "个方法有问题");
+            try(BufferedWriter writer = Files.newBufferedWriter(Paths.get(PathConfig.errorMethodPath), StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
+                writer.write(method.toString() + "\n" + "\n");
+            }catch (IOException e){
+                e.printStackTrace();
+            }
         }
     }
 

@@ -1,0 +1,97 @@
+public TileEntity getBlockTileEntity(int par1, int par2, int par3) {
+    label0: {
+        TileEntity tileentity;
+        label1: {
+            if (par2 >= 256) {
+                return null;
+            }
+            Chunk chunk = getChunkFromChunkCoords(par1 >> 4, par3 >> 4);
+            if (chunk == null) {
+                break label0;
+            }
+            tileentity = chunk.getChunkBlockTileEntity(par1 & 0xf, par2, par3 & 0xf);
+            if (tileentity != null) {
+                break label1;
+            }
+            Iterator iterator = addedTileEntityList.iterator();
+            TileEntity tileentity1;
+            do {
+                if (!iterator.hasNext()) {
+                    break label1;
+                }
+                tileentity1 = (TileEntity) iterator.next();
+            } while (tileentity1.isInvalid() || tileentity1.xCoord != par1 || tileentity1.yCoord != par2 || tileentity1.zCoord != par3);
+            tileentity = tileentity1;
+        }
+        return tileentity;
+    }
+    return null;
+}
+
+@Override
+public String resolve(VariableSubstitutor... substitutors) throws Exception {
+    String _filename_ = this.filename, _entryname_ = this.entryname;
+    for (VariableSubstitutor substitutor : substitutors) {
+        _filename_ = substitutor.substitute(_filename_);
+    }
+    for (VariableSubstitutor substitutor : substitutors) {
+        _entryname_ = substitutor.substitute(_entryname_);
+    }
+    return super.resolve(getZipEntryInputStream(_filename_, _entryname_), substitutors);
+}ClassFile[] getClasses() {
+    final char[] source = getSource();
+    final ArrayList classDefinitions = new ArrayList();
+    class CompilerRequestor implements ICompilerRequestor {
+
+        boolean hasErrors = false;
+
+        public void acceptResult(CompilationResult result) {
+            if (result.hasProblems()) {
+                EvaluationResult[] evalResults = evaluationResultsForCompilationProblems(result, source);
+                for (int i = 0; i < evalResults.length; i++) {
+                    EvaluationResult evalResult = evalResults[i];
+                    CategorizedProblem[] problems = evalResult.getProblems();
+                    for (int j = 0; j < problems.length; j++) {
+                        Evaluator.this.requestor.acceptProblem(problems[j], evalResult.getEvaluationID(), evalResult.getEvaluationType());
+                    }
+                }
+            }
+            if (result.hasErrors()) {
+                this.hasErrors = true;
+            } else {
+                ClassFile[] classFiles = result.getClassFiles();
+                for (int i = 0; i < classFiles.length; i++) {
+                    ClassFile classFile = classFiles[i];
+                    classDefinitions.add(classFile);
+                }
+            }
+        }
+    }
+    CompilerRequestor compilerRequestor = new CompilerRequestor();
+    Compiler compiler = getCompiler(compilerRequestor);
+    compiler.compile(new ICompilationUnit[] { new ICompilationUnit() {
+
+        public char[] getFileName() {
+            return CharOperation.concat(Evaluator.this.getClassName(), Util.defaultJavaExtension().toCharArray());
+        }
+
+        public char[] getContents() {
+            return source;
+        }
+
+        public char[] getMainTypeName() {
+            return Evaluator.this.getClassName();
+        }
+
+        public char[][] getPackageName() {
+            return null;
+        }
+    } });
+    if (compilerRequestor.hasErrors) {
+        return null;
+    } else {
+        ClassFile[] result = new ClassFile[classDefinitions.size()];
+        classDefinitions.toArray(result);
+        return result;
+    }
+}

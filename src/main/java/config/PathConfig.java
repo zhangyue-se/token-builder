@@ -17,6 +17,8 @@ public class PathConfig {
 
     public final static String truthPath = "src/main/resources/result/truth.txt";
 
+    public final static String errorMethodPath = "src/main/resources/result/error.txt";
+
     public final static String TYPE = "type";
 
     public final static String TOKEN = "token";
