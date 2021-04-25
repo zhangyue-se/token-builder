@@ -45,7 +45,4 @@ public class FileUtils {
         return list;
     }
 
-    public static void writeToFile(String content){
-
-    }
 }
