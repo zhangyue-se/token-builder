@@ -47,8 +47,8 @@ public class Token {
         this.type = type;
     }
 
-    public boolean isEmpty(List<Object> list){
-        if (list == null || list.size() == 0){
+    public boolean isChildrenEmpty(){
+        if (this.children == null || this.children.size() == 0){
             return true;
         }
         return false;

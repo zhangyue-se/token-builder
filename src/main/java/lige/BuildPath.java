@@ -22,7 +22,10 @@ public class BuildPath {
 
     public static void main(String[] args) {
         List<List<Token>> sequenceList = getSequenceList(path);
-
+        sequenceList.forEach(temp->{
+            String preorderPath = getPreorderPath(temp);
+            System.out.println(preorderPath);
+        });
     }
 
     /**
@@ -81,5 +84,50 @@ public class BuildPath {
         }
         return sequences;
     }
+
+    /**
+     * 获得层次结构的路径
+     * @param sequence
+     * @return
+     */
+    public String getHierarchicalPath(List<Token> sequence){
+        return null;
+    }
+
+
+    /**
+     * 获取序列先序遍历结果
+     */
+    public static String getPreorderPath(List<Token> sequence){
+        List<String> result = new ArrayList<>();
+        //第一个token从0开始
+        dfs(sequence,result,0);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String ss : result){
+            stringBuilder.append(ss);
+            stringBuilder.append(",");
+        }
+        return stringBuilder.substring(0,stringBuilder.length()-1);
+    }
+
+    /**
+     * dfs实现先序遍历
+     * @param child 当前token的孩子坐标
+     */
+    public static void dfs(List<Token> sequence,List<String> result,Integer child){
+
+        if (!sequence.get(child).isChildrenEmpty()){
+            result.add(sequence.get(child).getType());
+            for (Integer integer:sequence.get(child).getChildren()){
+                dfs(sequence,result,integer);
+            }
+        }else {
+            for (String name:sequence.get(child).getValue()){
+                result.add(sequence.get(child).getType());
+                result.add(name);
+            }
+        }
+    }
+
 
 }
