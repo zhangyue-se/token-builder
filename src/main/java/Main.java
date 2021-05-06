@@ -10,10 +10,7 @@ import run.VocabularyUtil;
 import util.FileUtils;
 import util.Utils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +31,17 @@ public class Main {
     static boolean flag3 = false;    //用来记录三个生成结果的线程有没有执行结束
 
     public static void main(String[] args) throws IOException {
+
+        //清空文件中的内容
+        File file = new File(PathConfig.result);
+        for (File file1 : file.listFiles()){
+            if (file1.isFile()){
+                FileWriter fileWriter =new FileWriter(file1);
+                fileWriter.write("");
+                fileWriter.flush();
+                fileWriter.close();
+            }
+        }
         System.out.println("开始获取所有java文件路径.......");
         FileUtils.getJavaPaths(PathConfig.rootPath);
         List<String> javaPathList = FileUtils.javaPathList;
@@ -82,14 +90,11 @@ public class Main {
         }
         System.out.println("开始合并文件.......");
         String[] mergerTruthPath = {"src/main/resources/result/result1/truth.txt","src/main/resources/result/result2/truth.txt","src/main/resources/result/result3/truth.txt"};
-        String truthPath = "src/main/resources/result/truth.txt";
-        FileUtils.mergeFiles(mergerTruthPath,truthPath);
+        FileUtils.mergeFiles(mergerTruthPath,PathConfig.truthPath);
         String[] mergerInorderPath = {"src/main/resources/result/result1/inorder.txt","src/main/resources/result/result2/inorder.txt","src/main/resources/result/result3/inorder.txt"};
-        String inorderPath = "src/main/resources/result/inorder.txt";
-        FileUtils.mergeFiles(mergerInorderPath,inorderPath);
+        FileUtils.mergeFiles(mergerInorderPath,PathConfig.inorderPath);
         String[] mergerSeqPath = {"src/main/resources/result/result1/seq.txt","src/main/resources/result/result2/seq.txt","src/main/resources/result/result3/seq.txt"};
-        String seqPath = "src/main/resources/result/seq.txt";
-        FileUtils.mergeFiles(mergerSeqPath,seqPath);
+        FileUtils.mergeFiles(mergerSeqPath,PathConfig.seqPath);
 
     }
 

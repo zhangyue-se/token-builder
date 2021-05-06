@@ -7,6 +7,8 @@ public class PathConfig {
 
     public final static String rootPath = "/Users/zhangyue/Desktop/华为IDE项目/代码补全Java/test";
 
+    public final static String result = "src/main/resources/result";
+
     public final static String typeVocabularyPath = "src/main/resources/result/type_vocabulary.txt";
 
     public final static String tokenVocabularyPath = "src/main/resources/result/token_vocabulary.txt";
