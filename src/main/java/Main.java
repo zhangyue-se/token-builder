@@ -29,6 +29,9 @@ public class Main {
     static Map<String, Integer> vocabularyOfType = new HashMap<>();     //存放type词表
     static Map<String, Integer> vocabularyOfToken = new HashMap<>();    //存放token词表
     static int count1 = 0;//用来计数出问题的方法
+    static boolean flag1 = false;    //用来记录三个生成结果的线程有没有执行结束
+    static boolean flag2 = false;    //用来记录三个生成结果的线程有没有执行结束
+    static boolean flag3 = false;    //用来记录三个生成结果的线程有没有执行结束
 
     public static void main(String[] args) throws IOException {
         System.out.println("开始获取所有java文件路径.......");
@@ -63,16 +66,31 @@ public class Main {
         vocabularyOfToken = VocabularyUtil.getVocabularyAsMap(PathConfig.tokenVocabularyPath);
 
         System.out.println("开始生成训练数据.......");
+
         //生成训练所需要的数据格式
-        int count2 = 0;
-        int all = methodDeclarationList.size();
-        for (MethodDeclaration method:methodDeclarationList){
-            System.out.println("正在处理第" + (++count2) + "个方法体，已完成：" + count2 + "/" + all);
-            String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
-            String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
-            handleToken(inorder, seqOrder, method);
+        threadRun(methodDeclarationList);
+
+//        for (MethodDeclaration method:methodDeclarationList){
+//            System.out.println("正在处理第" + (++count2) + "个方法体，已完成：" + count2 + "/" + all);
+//            String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
+//            String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
+//            handleToken(inorder, seqOrder, method);
+//        }
+
+        while (!flag1 || !flag2 || !flag3){
+            System.out.println(flag1+" "+flag2+" "+flag3);
         }
-        System.out.println("生成训练数据结束.......");
+        System.out.println("开始合并文件.......");
+        String[] mergerTruthPath = {"src/main/resources/result/result1/truth.txt","src/main/resources/result/result2/truth.txt","src/main/resources/result/result3/truth.txt"};
+        String truthPath = "src/main/resources/result/truth.txt";
+        FileUtils.mergeFiles(mergerTruthPath,truthPath);
+        String[] mergerInorderPath = {"src/main/resources/result/result1/inorder.txt","src/main/resources/result/result2/inorder.txt","src/main/resources/result/result3/inorder.txt"};
+        String inorderPath = "src/main/resources/result/inorder.txt";
+        FileUtils.mergeFiles(mergerInorderPath,inorderPath);
+        String[] mergerSeqPath = {"src/main/resources/result/result1/seq.txt","src/main/resources/result/result2/seq.txt","src/main/resources/result/result3/seq.txt"};
+        String seqPath = "src/main/resources/result/seq.txt";
+        FileUtils.mergeFiles(mergerSeqPath,seqPath);
+
     }
 
     /**
@@ -81,7 +99,8 @@ public class Main {
      * @param seqOrder
      * @throws IOException
      */
-    public static void handleToken(String inorder, String seqOrder, MethodDeclaration method) throws IOException {
+    public static void handleToken(String inorder, String seqOrder, MethodDeclaration method, BufferedWriter writer1,
+                                   BufferedWriter writer2, BufferedWriter writer3) throws IOException {
         //将中序序列处理为TokenInfo类型的list
         List<TokenInfo> tokenListOfInorder = new ArrayList<>();
         String[] inorderByLine = inorder.split("\n");
@@ -120,33 +139,18 @@ public class Main {
                 StringBuilder stringBuilder2 =getInorderResult(tokenListOfSeqOrder,i+1,tokenListOfInorder, vocabularyOfType, vocabularyOfToken);
 
                 //将处理好的序列写入文件
-                Path path1 = Paths.get(PathConfig.seqPath);
-                Path path2 = Paths.get(PathConfig.inorderPath);
-                Path path3 = Paths.get(PathConfig.truthPath);
-                try(BufferedWriter writer1 = Files.newBufferedWriter(path1, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
-                    BufferedWriter writer2 = Files.newBufferedWriter(path2, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
-                    BufferedWriter writer3 = Files.newBufferedWriter(path3, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
-
-                    if (stringBuilder2.toString().contains("null")||vocabularyOfToken.get(tokenListOfSeqOrder.get(i+1).getToken())==null||
-                            vocabularyOfType.get(tokenListOfSeqOrder.get(i+1).getType())==null){
-                        continue;
-                    }
-                    writer1.write(stringBuilder1.toString() + "\n");
-                    writer2.write(stringBuilder2.toString() + "\n");
-                    //写入正确结果
-                    writer3.write(vocabularyOfType.get(tokenListOfSeqOrder.get(i+1).getType()) + "," + vocabularyOfToken.get(tokenListOfSeqOrder.get(i+1).getToken()) + "\n");
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (stringBuilder2.toString().contains("null")||vocabularyOfToken.get(tokenListOfSeqOrder.get(i+1).getToken())==null||
+                        vocabularyOfType.get(tokenListOfSeqOrder.get(i+1).getType())==null){
+                    continue;
                 }
+                writer1.write(stringBuilder1.toString() + "\n");
+                writer2.write(stringBuilder2.toString() + "\n");
+                //写入正确结果
+                writer3.write(vocabularyOfType.get(tokenListOfSeqOrder.get(i+1).getType()) + "," + vocabularyOfToken.get(tokenListOfSeqOrder.get(i+1).getToken()) + "\n");
+
             }
         }else {
             System.out.println("该方法token个数不一致！！,目前一共有" + (++count1) + "个方法有问题");
-            try(BufferedWriter writer = Files.newBufferedWriter(Paths.get(PathConfig.errorMethodPath), StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
-                writer.write(method.toString() + "\n" + "\n");
-            }catch (IOException e){
-                e.printStackTrace();
-            }
         }
     }
 
@@ -220,6 +224,98 @@ public class Main {
                 }
             }
         });
+    }
+
+
+    /**
+     * 使用线程加快数据的生成速度
+     * 目前只是简单的创建了三个线程对不同的文件进行写。。。。。
+     * @param methodDeclarationList
+     */
+    public static void threadRun(List<MethodDeclaration> methodDeclarationList){
+        int border1 = methodDeclarationList.size() / 3;
+        int border2 = methodDeclarationList.size() / 3 * 2;
+        List<MethodDeclaration> list1 = new ArrayList<>(methodDeclarationList.subList(0,border1));
+        List<MethodDeclaration> list2 = new ArrayList<>(methodDeclarationList.subList(border1,border2));
+        List<MethodDeclaration> list3 = new ArrayList<>(methodDeclarationList.subList(border2,methodDeclarationList.size()-1));
+        final int len1 = list1.size();
+        final int len2 = list2.size();
+        final int len3 = list3.size();
+
+        new Thread(()->{
+            Path path1 = Paths.get("src/main/resources/result/result1/seq.txt");
+            Path path2 = Paths.get("src/main/resources/result/result1/inorder.txt");
+            Path path3 = Paths.get("src/main/resources/result/result1/truth.txt");
+
+            try (BufferedWriter writer1 = Files.newBufferedWriter(path1, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                 BufferedWriter writer2 = Files.newBufferedWriter(path2, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                 BufferedWriter writer3 = Files.newBufferedWriter(path3, StandardCharsets.UTF_8, StandardOpenOption.CREATE);) {
+                int count1 = 0;
+                for (MethodDeclaration method:list1){
+                    System.out.println("Thread1正在处理第" + (++count1) + "个方法体，已完成：" + count1 + "/" + len1);
+                    String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
+                    String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
+                    try {
+                        handleToken(inorder, seqOrder, method, writer1, writer2, writer3);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            flag1 = true;
+        },"Thread1").start();
+
+        new Thread(()->{
+            Path path1 = Paths.get("src/main/resources/result/result2/seq.txt");
+            Path path2 = Paths.get("src/main/resources/result/result2/inorder.txt");
+            Path path3 = Paths.get("src/main/resources/result/result2/truth.txt");
+            try (BufferedWriter writer1 = Files.newBufferedWriter(path1, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                 BufferedWriter writer2 = Files.newBufferedWriter(path2, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                 BufferedWriter writer3 = Files.newBufferedWriter(path3, StandardCharsets.UTF_8, StandardOpenOption.CREATE);) {
+                int count1 = 0;
+                for (MethodDeclaration method:list2){
+                    System.out.println("Thread2正在处理第" + (++count1) + "个方法体，已完成：" + count1 + "/" + len2);
+                    String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
+                    String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
+                    try {
+                        handleToken(inorder, seqOrder, method, writer1, writer2, writer3);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            flag2 = true;
+        },"Thread2").start();
+
+        new Thread(()->{
+            Path path1 = Paths.get("src/main/resources/result/result3/seq.txt");
+            Path path2 = Paths.get("src/main/resources/result/result3/inorder.txt");
+            Path path3 = Paths.get("src/main/resources/result/result3/truth.txt");
+            try (BufferedWriter writer1 = Files.newBufferedWriter(path1, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                 BufferedWriter writer2 = Files.newBufferedWriter(path2, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                 BufferedWriter writer3 = Files.newBufferedWriter(path3, StandardCharsets.UTF_8, StandardOpenOption.CREATE);) {
+                int count1 = 0;
+                for (MethodDeclaration method:list2){
+                    System.out.println("Thread3正在处理第" + (++count1) + "个方法体，已完成：" + count1 + "/" + len3);
+                    String inorder = TokenVisitorInOrder.tokenOfInOrder(method);
+                    String seqOrder = TokenVisitorSeqOrder.tokenOfSeqOrder(method);
+                    try {
+                        handleToken(inorder, seqOrder, method, writer1, writer2, writer3);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            flag3 = true;
+        },"Thread3").start();
+
+
     }
 
 
